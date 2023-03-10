@@ -2,10 +2,17 @@ const express = require("express");
 const router = express.Router();
 
 // controllers
-const { getTest, setTest, updateTest, deleteTest } = require("../controllers/testController");
+const {
+  getTests,
+  getTest,
+  setTest,
+  updateTest,
+  deleteTest,
+} = require("../controllers/testController");
 
 // routes
-router.get("/", getTest);
+router.get("/", getTests);
+router.get("/:id", getTest);
 router.post("/", setTest);
 router.put("/:id", updateTest);
 router.delete("/:id", deleteTest);
