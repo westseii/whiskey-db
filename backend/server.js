@@ -3,8 +3,7 @@ const dotenv = require("dotenv").config();
 const { errorHandler } = require("./middleware/errorMiddleware");
 const connectToDB = require("./config/db");
 
-const appName = "whiskey-db api";
-const mongoDBConnectionString = process.env.MONGO_URI;
+const appName = process.env.APP_NAME || "whiskey-db api";
 
 connectToDB();
 
@@ -27,9 +26,9 @@ app.get("/", (req, res) => {
 });
 
 // use routes
-app.use("/test", require("./routes/testRoutes"));
-
-app.use(errorHandler);
+app.use("/api/test", require("./routes/testRoutes"));
+app.use("/api/user", require("./routes/userRoutes"));
+app.use(errorHandler); // keep after API routes
 
 // 404
 app.use((req, res, next) => {

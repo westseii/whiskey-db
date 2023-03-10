@@ -40,7 +40,7 @@ const setTest = asyncHandler(async (req, res) => {
   const test = await Test.create({
     text: req.body.text,
   });
-  res.status(200).json(test);
+  res.status(201).json(test);
 });
 
 /**
@@ -57,7 +57,7 @@ const updateTest = asyncHandler(async (req, res) => {
   const updatedTest = await Test.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
   });
-  res.status(200).json(updatedTest);
+  res.status(201).json(updatedTest);
 });
 
 /**
