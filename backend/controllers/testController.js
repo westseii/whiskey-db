@@ -8,7 +8,7 @@ const Test = require("../models/testModel");
  * @access Private
  */
 const getTests = asyncHandler(async (req, res) => {
-  const tests = await Test.find({ user: req.user.id });
+  const tests = await Test.find({ userId: req.user.id });
 
   if (!tests.length) {
     res.status(400);
@@ -31,7 +31,7 @@ const getTests = asyncHandler(async (req, res) => {
 const getTest = asyncHandler(async (req, res) => {
   const test = await Test.findOne({
     _id: req.params.id,
-    user: req.user.id,
+    userId: req.user.id,
   });
 
   if (!test) {
@@ -59,7 +59,7 @@ const setTest = asyncHandler(async (req, res) => {
   }
 
   const createdTest = await Test.create({
-    user: req.user.id,
+    userId: req.user.id,
     text: req.body.text,
   });
 
@@ -80,7 +80,7 @@ const updateTest = asyncHandler(async (req, res) => {
   const updatedTest = await Test.findOneAndUpdate(
     {
       _id: req.params.id,
-      user: req.user.id,
+      userId: req.user.id,
     },
     req.body,
     {
@@ -109,7 +109,7 @@ const updateTest = asyncHandler(async (req, res) => {
 const deleteTest = asyncHandler(async (req, res) => {
   const deletedTest = await Test.findOneAndDelete({
     _id: req.params.id,
-    user: req.user.id,
+    userId: req.user.id,
   });
 
   if (!deletedTest) {
