@@ -8,11 +8,11 @@ const Test = require("../models/testModel");
  * @access Private
  */
 const getTests = asyncHandler(async (req, res) => {
-  const tests = await Test.find();
+  const tests = await Test.find({ user: req.user.id });
 
   if (!tests.length) {
     res.status(400);
-    throw new Error("No tests found");
+    throw new Error("No tests found for this user");
   }
 
   res.status(200).json(tests);
@@ -29,11 +29,14 @@ const getTests = asyncHandler(async (req, res) => {
  * @access Private
  */
 const getTest = asyncHandler(async (req, res) => {
-  const test = await Test.findById(req.params.id);
+  const test = await Test.findOne({
+    _id: req.params.id,
+    user: req.user.id,
+  });
 
   if (!test) {
     res.status(400);
-    throw new Error(`Test with id ${req.params.id} not found`);
+    throw new Error(`Test with id ${req.params.id} not found for this user`);
   }
 
   res.status(200).json(test);
@@ -52,14 +55,15 @@ const getTest = asyncHandler(async (req, res) => {
 const setTest = asyncHandler(async (req, res) => {
   if (!req.body.text) {
     res.status(400);
-    throw new Error("Missing key: text");
+    throw new Error("Body missing key: text");
   }
 
-  const test = await Test.create({
+  const createdTest = await Test.create({
+    user: req.user.id,
     text: req.body.text,
   });
 
-  res.status(201).json(test);
+  res.status(201).json(createdTest);
 });
 
 //
@@ -73,16 +77,21 @@ const setTest = asyncHandler(async (req, res) => {
  * @access Private
  */
 const updateTest = asyncHandler(async (req, res) => {
-  const test = await Test.findById(req.params.id);
+  const updatedTest = await Test.findOneAndUpdate(
+    {
+      _id: req.params.id,
+      user: req.user.id,
+    },
+    req.body,
+    {
+      new: true,
+    }
+  );
 
-  if (!test) {
+  if (!updatedTest) {
     res.status(400);
-    throw new Error(`Test with id ${req.params.id} not found`);
+    throw new Error(`Test with id ${req.params.id} not found for this user`);
   }
-
-  const updatedTest = await Test.findByIdAndUpdate(req.params.id, req.body, {
-    new: true, // return updated test
-  });
 
   res.status(201).json(updatedTest);
 });
@@ -98,12 +107,16 @@ const updateTest = asyncHandler(async (req, res) => {
  * @access Private
  */
 const deleteTest = asyncHandler(async (req, res) => {
-  const deletedTest = await Test.findByIdAndDelete(req.params.id);
+  const deletedTest = await Test.findOneAndDelete({
+    _id: req.params.id,
+    user: req.user.id,
+  });
 
   if (!deletedTest) {
     res.status(400);
-    throw new Error(`Test with id ${req.params.id} not found`);
+    throw new Error(`Test with id ${req.params.id} not found for this user`);
   }
+
   res.status(200).json({ id: req.params.id });
 });
 

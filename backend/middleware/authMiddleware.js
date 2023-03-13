@@ -10,7 +10,7 @@ const userProtected = asyncHandler(async (req, res, next) => {
     try {
       token = req.headers.authorization.split(" ")[1]; // get bearer token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await User.findById(decoded.id).select("_id"); // found user id that matches token
+      req.user = await User.findById(decoded.userId).select("_id"); // found user id in database that matches token
 
       // token and id verified
       next();
@@ -20,7 +20,7 @@ const userProtected = asyncHandler(async (req, res, next) => {
     }
   }
 
-  // not verified
+  // no token, not verified
   if (!token) {
     res.status(401);
     throw new Error("Not authorized. Missing token");

@@ -64,7 +64,7 @@ const registerUser = asyncHandler(async (req, res) => {
 const authenticateUser = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
 
-  const user = await User.findOne({ username }); // username is unique
+  const user = await User.findOne({ username }); // username is unique, always
 
   if (user && (await argon2.verify(user.password, password))) {
     res.status(200).json({
@@ -92,7 +92,7 @@ const authenticateUser = asyncHandler(async (req, res) => {
  * @access Private
  */
 const currentUser = asyncHandler(async (req, res) => {
-  const { _id, username, email } = await User.findById(req.user._id); // from userProtected middleware
+  const { _id, username, email } = await User.findById(req.user.id); // from userProtected middleware
 
   res.status(200).json({
     _id,
@@ -101,8 +101,8 @@ const currentUser = asyncHandler(async (req, res) => {
   });
 });
 
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
+const generateToken = (userId) => {
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "24h" });
 };
 
 module.exports = {
