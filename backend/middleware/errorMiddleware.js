@@ -4,8 +4,7 @@ const errorHandler = (err, req, res, next) => {
 
   res.json({
     message: err.message,
-    // requires server restart
-    stack: process.env.NODE_ENV === "prod" ? "production" : err.stack,
+    stack: process.env.NODE_ENV === "prod" ? "No stack trace in production" : err.stack,
   });
 };
 

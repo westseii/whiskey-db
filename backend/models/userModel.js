@@ -24,6 +24,12 @@ const userSchema = mongoose.Schema(
       type: String,
       required: [true, "Add a password"],
     },
+    flags: {
+      isAdmin: {
+        type: Boolean,
+        default: false,
+      },
+    },
   },
   {
     timestamps: true,

@@ -1,16 +1,15 @@
-const express = require("express");
 const dotenv = require("dotenv").config();
+const express = require("express");
+const connectToMongoDB = require("./config/db");
 const { errorHandler } = require("./middleware/errorMiddleware");
-const connectToDB = require("./config/db");
 
-const appName = process.env.APP_NAME || "whiskey-db api";
-
-connectToDB();
-
-const app = express();
+const appName = "whiskey-db api";
 const port = process.env.EXPRESS_PORT || 5000;
 
-// middleware
+connectToMongoDB();
+const app = express();
+
+// middleware, keep first
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -28,9 +27,11 @@ app.get("/", (req, res) => {
 // use routes
 app.use("/api/test", require("./routes/testRoutes"));
 app.use("/api/user", require("./routes/userRoutes"));
-app.use(errorHandler); // keep after API routes
 
-// 404
+// 404, keep last
 app.use((req, res, next) => {
-  res.status(404).send("<h1>Page not found</h1>");
+  res.status(404);
+  throw new Error("404 Not Found. The server cannot find the requested resource");
 });
+
+app.use(errorHandler); // keep after API routes

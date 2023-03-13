@@ -1,6 +1,6 @@
 const asyncHandler = require("express-async-handler");
+const argon2 = require("argon2");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs"); // TODO: replace with 'argon2id'
 
 const User = require("../models/userModel");
 
@@ -11,21 +11,21 @@ const User = require("../models/userModel");
  */
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, firstName, lastName, password } = req.body;
+
   if (!(username && email && firstName && lastName && password)) {
     res.status(400);
-    throw new Error("Register user is missing required fields");
+    throw new Error("User registration is missing required fields");
   }
 
   const userExists = await User.findOne({ username });
+
   if (userExists) {
     res.status(400);
     throw new Error(`User with username (${username}) already exists`);
   }
 
   // password hashing
-  // TODO: update with 'argon2id' functions
-  const salt = await bcrypt.genSalt();
-  const hashed = await bcrypt.hash(password, salt);
+  const hashed = await argon2.hash(password);
 
   // create new user
   const newUser = await User.create({
@@ -43,30 +43,67 @@ const registerUser = asyncHandler(async (req, res) => {
       firstName: newUser.firstName,
       lastName: newUser.lastName,
       password: null,
+      token: generateToken(newUser._id), // generate jwt
     });
   } else {
     res.status(400);
-    throw new Error("Register user error");
+    throw new Error("User registration error");
   }
 });
 
+//
+//
+//
+//
+//
 /**
  * @description Authenticate user
  * @route POST /api/user/authenticate
  * @access Public
  */
 const authenticateUser = asyncHandler(async (req, res) => {
-  res.json({ message: "Authenticate user" });
+  const { username, password } = req.body;
+
+  const user = await User.findOne({ username }); // username is unique
+
+  if (user && (await argon2.verify(user.password, password))) {
+    res.status(200).json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      token: generateToken(user._id), // generate jwt
+    });
+  } else {
+    res.status(400);
+    throw new Error("Invalid user credentials");
+  }
 });
 
+//
+//
+//
+//
+//
 /**
- * @description Get current user
- * @route GET /api/user/current
- * @access Public
+ * @description Get current user credentials
+ * @route GET /api/user/me
+ * @access Private
  */
 const currentUser = asyncHandler(async (req, res) => {
-  res.json({ message: "Get current user" });
+  const { _id, username, email } = await User.findById(req.user._id); // from userProtected middleware
+
+  res.status(200).json({
+    _id,
+    username,
+    email,
+  });
 });
+
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
+};
 
 module.exports = {
   registerUser,

@@ -9,12 +9,13 @@ const {
   updateTest,
   deleteTest,
 } = require("../controllers/testController");
+const { userProtected } = require("../middleware/authMiddleware");
 
 // routes
-router.get("/", getTests);
-router.get("/:id", getTest);
-router.post("/", setTest);
-router.put("/:id", updateTest);
-router.delete("/:id", deleteTest);
+router.get("/", userProtected, getTests);
+router.get("/:id", userProtected, getTest);
+router.post("/", userProtected, setTest);
+router.put("/:id", userProtected, updateTest);
+router.delete("/:id", userProtected, deleteTest);
 
 module.exports = router;
