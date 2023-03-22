@@ -34,4 +34,4 @@ app.use((req, res, next) => {
   throw new Error("404 Not Found. The server cannot find the requested resource");
 });
 
-app.use(errorHandler); // keep after API routes
+app.use(errorHandler); // keep after api routes

@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const argon2 = require("argon2");
 const jwt = require("jsonwebtoken");
+const validate = require("../validate");
 
 const User = require("../models/userModel");
 
@@ -24,6 +25,10 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error(`User with username (${username}) already exists`);
   }
 
+  // validate user password
+  const passwordError = validate.password(password);
+  if (passwordError) throw new Error(passwordError);
+
   // password hashing
   const hashed = await argon2.hash(password);
 
@@ -39,15 +44,14 @@ const registerUser = asyncHandler(async (req, res) => {
     res.status(201).json({
       _id: newUser._id,
       username: newUser.username,
-      email: newUser.email,
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
-      password: null,
+      // email: newUser.email,
+      // firstName: newUser.firstName,
+      // lastName: newUser.lastName,
       token: generateToken(newUser._id), // generate jwt
     });
   } else {
     res.status(400);
-    throw new Error("User registration error");
+    throw new Error("User registration error. Try again");
   }
 });
 
@@ -57,22 +61,24 @@ const registerUser = asyncHandler(async (req, res) => {
 //
 //
 /**
- * @description Authenticate user
- * @route POST /api/user/authenticate
+ * @description Authenticate/login user
+ * @route POST /api/user/login
  * @access Public
  */
-const authenticateUser = asyncHandler(async (req, res) => {
+const loginUser = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
 
   const user = await User.findOne({ username }); // username is unique, always
+
+  res.set("Access-Control-Allow-Origin", process.env.FRONTEND_BASEURL);
 
   if (user && (await argon2.verify(user.password, password))) {
     res.status(200).json({
       _id: user._id,
       username: user.username,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      // email: user.email,
+      // firstName: user.firstName,
+      // lastName: user.lastName,
       token: generateToken(user._id), // generate jwt
     });
   } else {
@@ -91,22 +97,21 @@ const authenticateUser = asyncHandler(async (req, res) => {
  * @route GET /api/user/me
  * @access Private
  */
-const currentUser = asyncHandler(async (req, res) => {
-  const { _id, username, email } = await User.findById(req.user.id); // from userProtected middleware
+const me = asyncHandler(async (req, res) => {
+  const { _id, username } = await User.findById(req.user); // from userProtected
 
   res.status(200).json({
     _id,
     username,
-    email,
   });
 });
 
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "24h" });
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "30m" });
 };
 
 module.exports = {
   registerUser,
-  authenticateUser,
-  currentUser,
+  loginUser,
+  me,
 };

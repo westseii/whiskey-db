@@ -4,8 +4,8 @@
   "description": "inventory db",
   "main": "server.js",
   "scripts": {
-    "start": "node backend/server.js",
-    "server": "nodemon backend/server.js"
+    "server": "node backend/server.js",
+    "dev": "nodemon backend/server.js"
   },
   "author": "westseii",
   "license": "MIT",

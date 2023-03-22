@@ -8,7 +8,7 @@ const Test = require("../models/testModel");
  * @access Private
  */
 const getTests = asyncHandler(async (req, res) => {
-  const tests = await Test.find({ userId: req.user.id });
+  const tests = await Test.find({ user: req.user });
 
   if (!tests.length) {
     res.status(400);
@@ -31,12 +31,12 @@ const getTests = asyncHandler(async (req, res) => {
 const getTest = asyncHandler(async (req, res) => {
   const test = await Test.findOne({
     _id: req.params.id,
-    userId: req.user.id,
+    user: req.user,
   });
 
   if (!test) {
     res.status(400);
-    throw new Error(`Test with id ${req.params.id} not found for this user`);
+    throw new Error(`Test with id (${req.params.id}) not found for this user`);
   }
 
   res.status(200).json(test);
@@ -59,7 +59,7 @@ const setTest = asyncHandler(async (req, res) => {
   }
 
   const createdTest = await Test.create({
-    userId: req.user.id,
+    user: req.user,
     text: req.body.text,
   });
 
@@ -80,7 +80,7 @@ const updateTest = asyncHandler(async (req, res) => {
   const updatedTest = await Test.findOneAndUpdate(
     {
       _id: req.params.id,
-      userId: req.user.id,
+      user: req.user,
     },
     req.body,
     {
@@ -90,7 +90,7 @@ const updateTest = asyncHandler(async (req, res) => {
 
   if (!updatedTest) {
     res.status(400);
-    throw new Error(`Test with id ${req.params.id} not found for this user`);
+    throw new Error(`Test with id (${req.params.id}) not found for this user`);
   }
 
   res.status(201).json(updatedTest);
@@ -109,12 +109,12 @@ const updateTest = asyncHandler(async (req, res) => {
 const deleteTest = asyncHandler(async (req, res) => {
   const deletedTest = await Test.findOneAndDelete({
     _id: req.params.id,
-    userId: req.user.id,
+    user: req.user,
   });
 
   if (!deletedTest) {
     res.status(400);
-    throw new Error(`Test with id ${req.params.id} not found for this user`);
+    throw new Error(`Test with id (${req.params.id}) not found for this user`);
   }
 
   res.status(200).json({ id: req.params.id });
